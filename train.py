@@ -77,10 +77,10 @@ def build_model(args):
         ('fc1', nn.Linear(in_classes, hidden_units)),
         ('relu1', nn.ReLU()),
         ('dropout1', nn.Dropout(0.5)),
-        ('fc2', nn.Linear(hidden_units, hidden_units / 2)),
+        ('fc2', nn.Linear(hidden_units, hidden_units // 2)),
         ('relu2', nn.ReLU()),
         ('dropout2', nn.Dropout(0.5)),
-        ('fc3', nn.Linear(hidden_units / 2, num_classes)),
+        ('fc3', nn.Linear(hidden_units // 2, num_classes)),
         ('log_softmax', nn.LogSoftmax(dim=1))
     ])
     
@@ -114,7 +114,6 @@ def validate_model(device, model, criterion, loader):
     return avg_loss, avg_accuracy
 
 def train_model(device, model, optimizer, criterion, train_loader, valid_loader, epochs=3):
-    print("Starting training...")
     model.to(device)
     print_step = 10
 
@@ -140,10 +139,10 @@ def train_model(device, model, optimizer, criterion, train_loader, valid_loader,
                 print(f"[Epoch {epoch+1}/{epochs}] Step {steps}/{len(train_loader)}: Train Loss = {avg_loss:.3f}")
 
         # Validate after each epoch
-        valid_loss, accuracy = validate_model(model, criterion, valid_loader)
+        valid_loss, accuracy = validate_model(device, model, criterion, valid_loader)
         print(f"[Epoch {epoch+1}/{epochs}] Validation: Loss = {valid_loss:.3f}, Accuracy = {accuracy*100:.2f}%")
 
-def save_checkpoint(device, model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='CMDCheckPoint.pth'):
+def save_checkpoint(device, model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='NewCheckPoint.pth'):
     model.class_to_idx = image_datasets['trainData'].class_to_idx
 
     checkpoint_dict = {
@@ -158,39 +157,46 @@ def save_checkpoint(device, model, image_datasets, epochs, learning_rate, optimi
 
     save_path = f"{saveDir}/{fileName}"
     torch.save(checkpoint_dict, save_path)
+    
+    return save_path
 
 def main():
     args = get_input_args()
 
     print("Get transforms and loaders", end="... ")
     image_datasets, dataloaders, _ = utils.get_transforms_and_loaders(args.data_dir)
-    print("------------------------------------------------------------------")
+    print("\nFinished")
+    print("\n------------------------------------------------------------------")
     
     print("Get device name", end="... ")
     device = utils.get_device_name(args.gpu)
-    print("------------------------------------------------------------------")
+    print("\nFinished, Device: {device}}")
+    print("\n------------------------------------------------------------------")
     
     print("Build model", end="... ")
     model = build_model(args)
     optimizer = optim.Adam(model.classifier.parameters(), lr=args.learning_rate)
     loss_function = nn.NLLLoss()
-    print("------------------------------------------------------------------")
+    print("\nFinished")
+    print("\n------------------------------------------------------------------")
     
     print("Start training...")
-
     # Train model 
     train_model(device, model, optimizer, loss_function, dataloaders['trainLoader'], dataloaders['validLoader'], args.epochs)
+    print("\nFinished")
+    print("\n------------------------------------------------------------------")
 
     # Validate model
     print("Start validating...")
     valid_loss, accuracy = validate_model(device, model, loss_function, dataloaders['testLoader'])
     print('[Test result] Valid loss: {:.3f}, Accuracy: {:.3f}'.format(valid_loss, accuracy * 100))
-    print("------------------------------------------------------------------")
+    print("\n------------------------------------------------------------------")
     
     # Save checkpoint
     print("Save checkpoint", end="... ")
-    save_checkpoint(device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
-    print("------------------------------------------------------------------")
+    save_path = save_checkpoint(device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
+    print("\n------------------------------------------------------------------")
+    print("\nFinished, Save path: {save_path}}")
     
     print("Training finished")
     return 0

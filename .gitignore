@@ -102,4 +102,4 @@ ENV/
 
 .github/**
 
-checkpoint.pth
+*.pth
