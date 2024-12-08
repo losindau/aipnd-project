@@ -142,11 +142,12 @@ def train_model(device, model, optimizer, criterion, train_loader, valid_loader,
         valid_loss, accuracy = validate_model(device, model, criterion, valid_loader)
         print(f"[Epoch {epoch+1}/{epochs}] Validation: Loss = {valid_loss:.3f}, Accuracy = {accuracy*100:.2f}%")
 
-def save_checkpoint(device, model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='NewCheckPoint.pth'):
+def save_checkpoint(arch, device, model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='NewCheckPoint.pth'):
     model.class_to_idx = image_datasets['trainData'].class_to_idx
 
     checkpoint_dict = {
         'device': device,
+        'architecture': arch,
         'epochs': epochs,
         'learning_rate': learning_rate,
         'classifier': model.classifier,
@@ -194,7 +195,7 @@ def main():
     
     # Save checkpoint
     print("Save checkpoint", end="... ")
-    save_path = save_checkpoint(device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
+    save_path = save_checkpoint(args.arch, device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
     print("\n------------------------------------------------------------------")
     print(f"\nFinished, Save path: {save_path}")
     
