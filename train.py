@@ -170,7 +170,7 @@ def main():
     
     print("Get device name", end="... ")
     device = utils.get_device_name(args.gpu)
-    print("\nFinished, Device: {device}}")
+    print(f"\nFinished, Device: {device}")
     print("\n------------------------------------------------------------------")
     
     print("Build model", end="... ")
@@ -196,7 +196,7 @@ def main():
     print("Save checkpoint", end="... ")
     save_path = save_checkpoint(device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
     print("\n------------------------------------------------------------------")
-    print("\nFinished, Save path: {save_path}}")
+    print(f"\nFinished, Save path: {save_path}")
     
     print("Training finished")
     return 0
