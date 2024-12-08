@@ -143,10 +143,11 @@ def train_model(device, model, optimizer, criterion, train_loader, valid_loader,
         valid_loss, accuracy = validate_model(model, criterion, valid_loader)
         print(f"[Epoch {epoch+1}/{epochs}] Validation: Loss = {valid_loss:.3f}, Accuracy = {accuracy*100:.2f}%")
 
-def save_checkpoint(model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='CMDCheckPoint.pth'):
+def save_checkpoint(device, model, image_datasets, epochs, learning_rate, optimizer, saveDir, fileName='CMDCheckPoint.pth'):
     model.class_to_idx = image_datasets['trainData'].class_to_idx
 
     checkpoint_dict = {
+        'device': device,
         'epochs': epochs,
         'learning_rate': learning_rate,
         'classifier': model.classifier,
@@ -162,7 +163,7 @@ def main():
     args = get_input_args()
 
     print("Get transforms and loaders", end="... ")
-    image_datasets, dataloaders = utils.get_transforms_and_loaders(args.data_dir)
+    image_datasets, dataloaders, _ = utils.get_transforms_and_loaders(args.data_dir)
     print("------------------------------------------------------------------")
     
     print("Get device name", end="... ")
@@ -188,7 +189,7 @@ def main():
     
     # Save checkpoint
     print("Save checkpoint", end="... ")
-    save_checkpoint(model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
+    save_checkpoint(device, model, image_datasets, args.epochs, args.learning_rate, optimizer, args.save_dir)
     print("------------------------------------------------------------------")
     
     print("Training finished")

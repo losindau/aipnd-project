@@ -80,4 +80,4 @@ def get_transforms_and_loaders(data_dir, batchSize=64):
         )
     }
 
-    return image_datasets, dataloaders
+    return image_datasets, dataloaders, data_transforms
