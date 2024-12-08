@@ -50,13 +50,13 @@ def get_input_args():
 
     return parser.parse_args()
 
-def load_checkpoint(device, filepath):
+def load_checkpoint(filepath):
     checkpoint = torch.load(filepath)
-    device = checkpoint['device']
+    arch = checkpoint['architecture']
     
-    if device == "vgg19":
+    if arch == "vgg19":
         model = vgg19(weights=VGG19_Weights.IMAGENET1K_V1)
-    elif device == "resnet":
+    elif arch == "resnet":
         model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
     else:
         raise ValueError("The model architecture must be vgg19 or resnet")
@@ -74,8 +74,8 @@ def load_checkpoint(device, filepath):
 def process_image(image, transforms):
     return transforms(Image.open(image))
 
-def predict(device, cat_to_name, image_path, model, topk=5):
-    image = process_image(image_path).unsqueeze(0).to(device)
+def predict(device, cat_to_name, image_path, transforms, model, topk=5):
+    image = process_image(image_path, transforms).unsqueeze(0).to(device)
     model = model.to(device)
     model.eval()
     
@@ -97,32 +97,27 @@ def main():
 
     print("Get transforms and loaders", end="... ")
     _, _, data_transforms = utils.get_transforms_and_loaders(args.data_dir)
-    print("------------------------------------------------------------------")
+    print("\nFinished")
+    print("\n------------------------------------------------------------------")
     
     print("Get device name", end="... ")
     device = utils.get_device_name(args.gpu)
-    print("------------------------------------------------------------------")
+    print(f"\nFinished, Device: {device}")
+    print("\n------------------------------------------------------------------")
 
-    print("Load checkpoint", end="... ")
+    print(f"Load checkpoint, path {args.checkpoint_path}", end="... ")
     model, _ = load_checkpoint(args.checkpoint_path)
-    model = model.to(device)
-    print("------------------------------------------------------------------")
-
-    print("Load labels", end="... ")
-    labels = utils.load_cat_to_name(args.cat_to_name_path)
-    print("------------------------------------------------------------------")
-    
-    print("Process image", end="... ")
-    image_path = args.image_path
-    image = process_image(image_path=image_path, image_transform=data_transforms["validTest"])
-    print("------------------------------------------------------------------")
+    print("\n------------------------------------------------------------------")
 
     print("Predict...")
-    top_ps, top_labels, top_flowers = predict(model, device, image, labels, args.top_k)
+    image_path = args.image_path
+    cat_to_name = utils.load_cat_to_name(args.cat_to_name_path)
+    actual_flower_name = cat_to_name[image_path.split("\\")[2]]
+    top_ps, top_flowers = predict(device, cat_to_name, image_path, data_transforms['validationTransforms'], model, args.top_k)
 
     print("Result:")
+    print("Actual name: ", actual_flower_name)
     print("Top probabilities: ", top_ps)
-    print("Top labels: ", top_labels)
     print("Top flower names: ", top_flowers)
 
     return 0
